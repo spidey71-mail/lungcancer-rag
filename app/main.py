@@ -1,9 +1,16 @@
 from app.ingestion.pubmed_client import PubMedClient
 from app.ingestion.pubmed_parser import PubMedParser
+from app.ingestion.candidate_retriever import CandidateRetriever
+from app.ingestion.query_builder import LungCancerQueryBuilder
 from app.knowledge.relevance import RelevanceFilter
 
 
-def main():
+def run_baseline_experiment() -> None:
+    """
+    Original single-query PubMed ingestion experiment.
+    Kept as the baseline for comparison.
+    """
+
     query = "lung cancer AND gene"
     retmax = 5
 
@@ -64,6 +71,7 @@ def main():
         print("-" * 60)
 
         publications = parser.parse(xml_data)
+
         # --------------------------------------------------
         # RELEVANCE FILTER
         # --------------------------------------------------
@@ -116,6 +124,10 @@ def main():
                 f"{'; '.join(result.reasons) or 'None'}"
             )
 
+        # --------------------------------------------------
+        # FILTER SUMMARY
+        # --------------------------------------------------
+
         print()
         print("-" * 60)
         print("FILTER SUMMARY")
@@ -130,15 +142,23 @@ def main():
         )
 
         print(
-            f"Rejected                : {rejected_count}"
+            f"Rejected               : {rejected_count}"
+        )
+
+        relevance_rate = (
+            relevant_count / len(publications) * 100
+            if publications
+            else 0.0
         )
 
         print(
             f"Relevance rate         : "
-            f"{(relevant_count / len(publications) * 100):.1f}%"
-            if publications
-            else "Relevance rate         : 0.0%"
+            f"{relevance_rate:.1f}%"
         )
+
+        # --------------------------------------------------
+        # STRUCTURED PUBLICATION SUMMARY
+        # --------------------------------------------------
 
         for index, publication in enumerate(
             publications,
@@ -151,21 +171,23 @@ def main():
             print(f"Journal    : {publication.journal}")
             print(f"Year       : {publication.publication_year}")
             print(f"Authors    : {len(publication.authors)}")
+
             print(
                 f"Abstract   : "
                 f"{'Available' if publication.abstract else 'Missing'}"
             )
+
             print(f"DOI        : {publication.doi}")
             print(f"Keywords   : {len(publication.keywords)}")
             print(f"MeSH terms : {len(publication.mesh_terms)}")
 
         # --------------------------------------------------
-        # SUMMARY
+        # RESULT
         # --------------------------------------------------
 
         print()
         print("=" * 60)
-        print("RESULT")
+        print("BASELINE RESULT")
         print("=" * 60)
 
         print(
@@ -177,7 +199,7 @@ def main():
         )
 
         print(
-            f"Failed                   : "
+            f"Failed                  : "
             f"{len(pmids) - len(publications)}"
         )
 
@@ -192,6 +214,119 @@ def main():
 
     finally:
         client.close()
+
+
+def run_candidate_retrieval_experiment() -> None:
+    """
+    Controlled multi-query candidate retrieval experiment.
+    """
+
+    print()
+    print()
+    print("=" * 60)
+    print("       CONTROLLED CANDIDATE RETRIEVAL")
+    print("=" * 60)
+
+    client = PubMedClient()
+    query_builder = LungCancerQueryBuilder()
+
+    try:
+        queries = query_builder.build_queries()
+
+        retriever = CandidateRetriever(
+            client=client,
+            query_builder=query_builder,
+        )
+
+        candidates = retriever.retrieve(
+            retmax_per_query=5,
+        )
+
+        print()
+        print("-" * 60)
+        print("RETRIEVAL SUMMARY")
+        print("-" * 60)
+
+        print(
+            f"Query families       : {len(queries)}"
+        )
+
+        print(
+            "Results per query    : 5"
+        )
+
+        raw_results = len(queries) * 5
+
+        print(
+            f"Maximum candidates   : {raw_results}"
+        )
+
+        print(
+            f"Unique candidates    : {len(candidates)}"
+        )
+
+        duplicates = raw_results - len(candidates)
+
+        print(
+            f"Duplicates removed   : {duplicates}"
+        )
+
+        # --------------------------------------------------
+        # QUERY COVERAGE
+        # --------------------------------------------------
+
+        print()
+        print("-" * 60)
+        print("QUERY COVERAGE")
+        print("-" * 60)
+
+        for query in queries:
+            count = sum(
+                query.name in candidate.discovered_by
+                for candidate in candidates
+            )
+
+            print(
+                f"{query.name:<25} "
+                f"{count} unique papers"
+            )
+
+        # --------------------------------------------------
+        # PROVENANCE
+        # --------------------------------------------------
+
+        print()
+        print("-" * 60)
+        print("CANDIDATE PROVENANCE")
+        print("-" * 60)
+
+        for candidate in candidates:
+            sources = ", ".join(
+                candidate.discovered_by
+            )
+
+            print(
+                f"{candidate.pmid:<12} "
+                f"{sources}"
+            )
+
+        print()
+        print("=" * 60)
+        print("CONTROLLED RETRIEVAL COMPLETE")
+        print("=" * 60)
+
+    finally:
+        client.close()
+
+
+def main() -> None:
+    """
+    Run the complete automated knowledge-construction demonstration.
+    """
+
+    run_baseline_experiment()
+
+    run_candidate_retrieval_experiment()
 
 
 if __name__ == "__main__":
