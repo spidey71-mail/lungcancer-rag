@@ -687,3 +687,48 @@ This provides an auditable path from generated answers back to the original
 biomedical publication.
 
 //The system does not directly dump PubMed search results into the RAG knowledge base. It performs controlled candidate retrieval, deduplication, relevance assessment, explainable evidence scoring, and provenance-preserving knowledge construction before downstream RAG processing.
+
+//## Knowledge Document Construction
+
+Evidence-backed knowledge records are converted into retrieval-ready
+documents before embedding.
+
+The document representation preserves:
+
+- Publication metadata
+- Gene symbols
+- Disease context
+- Molecular evidence
+- Evidence types
+- Evidence score
+- Evidence reasons
+- PMID
+- PubMed provenance
+- Retrieval query
+
+The system separates knowledge representation from retrieval
+representation.
+
+KnowledgeRecord
+→ KnowledgeDocument
+→ Chunking
+→ Embedding
+→ Vector Database
+
+This separation allows different document representations to be
+evaluated experimentally without changing the underlying biomedical
+knowledge extraction process.
+
+//what we are putting into the RAG
+Title: EGFR mutations in non-small cell lung cancer
+PMID: TEST001
+Genes: EGFR
+Disease Context: lung cancer, non-small cell lung cancer
+Molecular Evidence: mutation
+Evidence Types: prognosis, survival
+Evidence Score: 0.8800
+Evidence Reasons: gene-specific evidence
+
+METADATA:
+{'pmid': 'TEST001', 'source': 'PubMed', 'query': 'lung cancer AND gene', 'journal': None, 'publication_year': None, 'doi': None, 'genes': ['EGFR'], 'disease_context': ['lung cancer', 'non-small cell lung cancer'], 'molecular_evidence': ['mutation'], 'evidence_types': ['prognosis', 'survival'], 'evidence_score': 0.88}
+(lungcancer-rag) PS D:\lungcancer-rag> 
