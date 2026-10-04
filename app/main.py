@@ -1,5 +1,6 @@
 from app.ingestion.pubmed_client import PubMedClient
 from app.ingestion.pubmed_parser import PubMedParser
+from app.knowledge.relevance import RelevanceFilter
 
 
 def main():
@@ -63,6 +64,81 @@ def main():
         print("-" * 60)
 
         publications = parser.parse(xml_data)
+        # --------------------------------------------------
+        # RELEVANCE FILTER
+        # --------------------------------------------------
+
+        relevance_filter = RelevanceFilter()
+
+        print()
+        print("-" * 60)
+        print("RELEVANCE FILTER")
+        print("-" * 60)
+
+        relevant_count = 0
+        rejected_count = 0
+
+        for index, publication in enumerate(
+            publications,
+            start=1,
+        ):
+            result = relevance_filter.evaluate(publication)
+
+            status = "KEEP" if result.relevant else "REJECT"
+
+            if result.relevant:
+                relevant_count += 1
+            else:
+                rejected_count += 1
+
+            print()
+            print(f"[{index}] {status}")
+            print(f"PMID       : {publication.pmid}")
+            print(f"Title      : {publication.title}")
+
+            print(
+                f"Lung terms : "
+                f"{', '.join(result.lung_cancer_hits) or 'None'}"
+            )
+
+            print(
+                f"Molecular  : "
+                f"{', '.join(result.molecular_hits) or 'None'}"
+            )
+
+            print(
+                f"Evidence   : "
+                f"{', '.join(result.evidence_hits) or 'None'}"
+            )
+
+            print(
+                f"Reasons    : "
+                f"{'; '.join(result.reasons) or 'None'}"
+            )
+
+        print()
+        print("-" * 60)
+        print("FILTER SUMMARY")
+        print("-" * 60)
+
+        print(
+            f"Candidate publications : {len(publications)}"
+        )
+
+        print(
+            f"Relevant (KEEP)        : {relevant_count}"
+        )
+
+        print(
+            f"Rejected                : {rejected_count}"
+        )
+
+        print(
+            f"Relevance rate         : "
+            f"{(relevant_count / len(publications) * 100):.1f}%"
+            if publications
+            else "Relevance rate         : 0.0%"
+        )
 
         for index, publication in enumerate(
             publications,
