@@ -619,3 +619,71 @@ Query-level provenance tracking
 
 // A single lexical query provides a narrow retrieval path. The controlled multi-query strategy expands discovery across mutation, prognosis, biomarker, survival, therapy, NSCLC, LUAD, and LUSC dimensions. PMID-level deduplication prevents duplicate documents from entering the downstream corpus while preserving the query provenance that led to each candidate.
 
+// ## Automated Knowledge Construction
+
+The system is designed to construct a traceable biomedical knowledge base
+from PubMed literature rather than directly dumping retrieved documents
+into a vector database.
+
+### Current Pipeline
+
+PubMed API
+→ Query Construction
+→ Candidate Retrieval
+→ Deduplication
+→ Relevance Filtering
+→ Evidence Scoring
+→ Knowledge Record
+
+### Evidence Scoring
+
+Each candidate publication is evaluated across multiple dimensions:
+
+- Lung-cancer disease context
+- Molecular/genomic context
+- Biomedical evidence context
+- Gene-specificity
+- Evidence strength
+
+The resulting score is accompanied by explicit evidence hits and reasons,
+making the filtering process explainable.
+
+### Knowledge Records
+
+Relevant publications are transformed into structured knowledge records.
+
+Each record preserves:
+
+- PMID
+- Publication metadata
+- Gene symbols
+- Disease context
+- Molecular evidence
+- Evidence types
+- Evidence score
+- Evidence reasons
+- PubMed provenance
+- Retrieval query
+
+This prevents loss of source traceability when the data is later converted
+into RAG documents and embeddings.
+
+### Research Significance
+
+A conventional ingestion pipeline may retrieve documents and immediately
+embed them. This makes it difficult to determine why a document entered the
+knowledge base.
+
+Our pipeline introduces an intermediate evidence-aware representation:
+
+Publication
+→ Relevance
+→ Evidence Score
+→ Knowledge Record
+→ RAG Document
+→ Embedding
+
+This provides an auditable path from generated answers back to the original
+biomedical publication.
+
+//The system does not directly dump PubMed search results into the RAG knowledge base. It performs controlled candidate retrieval, deduplication, relevance assessment, explainable evidence scoring, and provenance-preserving knowledge construction before downstream RAG processing.
