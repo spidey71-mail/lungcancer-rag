@@ -51,6 +51,32 @@ class PubMedClient:
         data = response.json()
 
         return data["esearchresult"]["idlist"]
+    
+    def fetch(self, pmids: list[str]) -> str:
+        if not pmids:
+            return ""
+
+        params = {
+            "db": "pubmed",
+            "id": ",".join(pmids),
+            "retmode": "xml",
+            "tool": self.tool,
+        }
+
+        if self.email:
+            params["email"] = self.email
+
+        if self.api_key:
+            params["api_key"] = self.api_key
+
+        response = self.client.get(
+            "/efetch.fcgi",
+            params=params,
+        )
+
+        response.raise_for_status()
+
+        return response.text
 
     def close(self):
         self.client.close()

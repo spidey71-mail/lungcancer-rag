@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class Publication(BaseModel):
@@ -15,5 +16,8 @@ class Publication(BaseModel):
     doi: Optional[str] = None
 
     keywords: list[str] = Field(default_factory=list)
+    mesh_terms: list[str] = Field(default_factory=list)
+
+    publication_types: list[str] = Field(default_factory=list)
 
     source: str = "PubMed"
