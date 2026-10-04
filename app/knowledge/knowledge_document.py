@@ -79,6 +79,7 @@ class KnowledgeDocumentBuilder:
 
         return {
             "pmid": record.pmid,
+            "title": record.title,
             "source": record.provenance.source,
             "query": record.provenance.query,
             "journal": record.journal,
@@ -89,4 +90,5 @@ class KnowledgeDocumentBuilder:
             "molecular_evidence": record.molecular_evidence,
             "evidence_types": record.evidence_types,
             "evidence_score": record.evidence_score,
+            "evidence_reasons": record.reasons,
         }
