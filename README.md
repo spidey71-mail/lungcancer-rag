@@ -732,3 +732,7 @@ Evidence Reasons: gene-specific evidence
 METADATA:
 {'pmid': 'TEST001', 'source': 'PubMed', 'query': 'lung cancer AND gene', 'journal': None, 'publication_year': None, 'doi': None, 'genes': ['EGFR'], 'disease_context': ['lung cancer', 'non-small cell lung cancer'], 'molecular_evidence': ['mutation'], 'evidence_types': ['prognosis', 'survival'], 'evidence_score': 0.88}
 (lungcancer-rag) PS D:\lungcancer-rag> 
+
+//The ingestion pipeline transforms PubMed publications into validated structured knowledge records before persistence. The knowledge base stores disease context, gene information, molecular evidence, evidence types, confidence score, and provenance rather than blindly storing raw PubMed documents.
+
+//"We separate knowledge construction from retrieval. PubMed documents are first transformed into validated structured knowledge records. Only after evidence scoring and provenance preservation do we convert them into RAG-ready documents."
