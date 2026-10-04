@@ -606,3 +606,16 @@ high-quality biomedical evidence ingestion.
 ```
 
 **Next objective:** develop a stronger relevance mechanism that evaluates **semantic and research-specific relevance**, while retaining the lexical system as the baseline for comparison.
+
+// Checkpoint 4B — Multi-Query Candidate Discovery
+
+8 biomedical query families
+40 retrieval slots
+19 unique publications
+21 duplicate retrievals
+52.5% duplicate rate
+PMID-level deduplication
+Query-level provenance tracking
+
+// A single lexical query provides a narrow retrieval path. The controlled multi-query strategy expands discovery across mutation, prognosis, biomarker, survival, therapy, NSCLC, LUAD, and LUSC dimensions. PMID-level deduplication prevents duplicate documents from entering the downstream corpus while preserving the query provenance that led to each candidate.
+
